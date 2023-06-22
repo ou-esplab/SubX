@@ -1,0 +1,25 @@
+name: SubX
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7.3
+  - tqdm
+  - xskillscore
+  - dask
+  - netcdf4
+  - nbserverproxy
+  - seaborn
+  - numpy
+  - pip
+  - cartopy
+  - ipywidgets
+  - cfgrib
+  - jupyter_client
+  - matplotlib
+  - proplot
+  - xarray
+  - jupyterlab
+  - scipy
+  - xesmf
+  - eofs
+prefix: /homes/kpegion/.conda/envs/SubX
