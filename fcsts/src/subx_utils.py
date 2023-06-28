@@ -2,45 +2,41 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 import os
+import os.path
 from datetime import datetime, timedelta, date
 
 import matplotlib.pyplot as plt
 import proplot as pplt
-#import panel as pn
-#import panel.widgets as pnw
-#import hvplot
-#import hvplot.xarray  # noqa
-#import geoviews
-#import geoviews.feature as gf
 
-#import cartopy.crs as ccrs
-#import cartopy.mpl.ticker as cticker
-#import cartopy.feature as cfeature
+import cartopy.crs as ccrs
+import cartopy.mpl.ticker as cticker
+import cartopy.feature as cfeature
+
+import hvplot
+import hvplot.xarray
+import hvplot.pandas
+
+import panel as pn
+import panel.widgets as pnw
+
+import geoviews
+import geoviews.feature as gf
 
 xr.set_options(keep_attrs=True)  
 
 def initSubxModels():
     
-    all_varnames=['ua','ua','rlut','tas','ts','zg','va','va','pr','zg','uas','vas','psl']
-    all_plevstrs=['850','200','toa','2m','sfc','500','200','850','sfc','200','10m','10m','msl']
-    all_units=['ms-1','ms-1','Wm-2','degC','degC','m','ms-1','ms-1','mmday-1','m','ms-1','ms-1','hPa']
-    #all_units=['degC','mmday-1','m']
+    #all_varnames=['ua','ua','rlut','tas','ts','zg','va','va','pr','zg','uas','vas','psl']
+    #all_plevstrs=['850','200','toa','2m','sfc','500','200','850','sfc','200','10m','10m','msl']
+    #all_units=['ms-1','ms-1','Wm-2','degC','degC','m','ms-1','ms-1','mmday-1','m','ms-1','ms-1','hPa']
     
-    #sub1_varnames=['ua','ua','rlut','tas','ts','zg','va','va','pr','zg','uas','vas','psl']
-    #sub1_plevstrs=['850','200','toa','2m','sfc','500','200','850','sfc','200','10m','10m','msl']
-    #sub1_units=['ms-1','ms-1','Wm-2','degC','degC','m','ms-1','ms-1','mmday-1','m','ms-1','ms-1','hPa']
+    all_varnames=['tas','pr','zg']
+    all_plevstrs=['2m','sfc','500']
+    all_units=['degC','mmday-1','m']
+   
     sub1_varnames=['tas','pr','zg']
     sub1_plevstrs=['2m','sfc','500']
-    #sub1_varnames=['tas']
-    #sub1_plevstrs=['2m']
     sub1_units=['degC','mmday-1','m']
-    all_varnames=['tas','pr','zg']
-    #all_varnames=['tas','pr']
-    #all_varnames=['tas']
-    #all_plevstrs=['2m'] 
-    all_plevstrs=['2m','sfc','500']
-    #all_plevstrs=['2m','sfc']
-    
     
     ccsm4_dict={'model':'CCSM4','group':'RSMAS','varnames': all_varnames, 'plevstrs': all_plevstrs, 'plot_loc':2}
     geos_dict={'model':'GEOS_V2p1','group':'GMAO','varnames': all_varnames, 'plevstrs': all_plevstrs,'plot_loc':4}
@@ -53,22 +49,17 @@ def initSubxModels():
     cfsv2_dict={'model':'CFSv2','group':'NCEP','varnames': sub1_varnames, 'plevstrs': sub1_plevstrs,'plot_loc':7}
 
     subxclimos_list=[fim_dict,ccsm4_dict,geos_dict,nrl_dict,geps_dict,gefs_dict,cfsv2_dict]
-    #subxclimos_list=[fim_dict,ccsm4_dict,geos_dict,nrl_dict,geps_dict,gefs_dict]
     subxmodels_list=[fim_dict,ccsm4_dict,geos_dict,nrl_dict,geps_dict,gefs_dict,cfsv2_dict]
-    #subxmodels_list=[fim_dict,ccsm4_dict,geos_dict,nrl_dict,geps_dict,gefs_dict]
-    #subxclimos_list=[fim_dict] 
-    #subxmodels_list=[fim_dict]
-    
-    
+   
     return subxmodels_list, subxclimos_list,all_varnames, all_plevstrs, all_units
 
 def initPlotParams():
 
     # Dictionary defining parameters for plottting variables
-    #all_varnames=['ua','ua','rlut','tas','ts','zg','va','va','pr','zg','uas','vas','psl']
     clevs_tas=[-4,-3,-2.5,-2,-1.5,-1,-0.5,-0.2,0.2,0.5,1,1.5,2,2.5,3,4]
     clevs_pr=[-100,-50,-25,-10,-5,-2,2,5,10,25,50,100]
     clevs_zg=[-50,-45,-40,-35,-30,-25,-20,-15,15,20,25,30,35,40,45,50]
+ 
     ## Estimated clevs, going to change with trial and error
     #clevs_ua=[-25,-20,-15,-10,-5,0,5,10,15,20,25]
     #clevs_ua2=[-25,-20,-15,-10,-5,0,5,10,15,20,25]
@@ -80,44 +71,47 @@ def initPlotParams():
     #clevs_vas=[-20,-15,-10,-5,0,5,10,15,20]
     #clevs_psl=[-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30]
     
+    degC = u'\N{DEGREE SIGN}'+'C'
     tas_dict={'name':'tas','plev':'2m','label':'2m Temperature','outname':'2mTemp',
-              'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
+              'clevs':clevs_tas,'clims':(clevs_tas[0],clevs_tas[-1]),'cmap':'ColdHot','units':degC,
               'regions':['Global','NorthAmerica']}
     pr_dict={'name':'pr','plev':'sfc','label':'Total Precipitation','outname':'Precip',
-              'clevs':clevs_pr,'cmap':'DryWet','units':'mm',
+              'clevs':clevs_pr,'clims':(clevs_pr[0],clevs_pr[-1]),'cmap':'DryWet','units':'mm',
               'regions':['Global','NorthAmerica']}
     zg_dict={'name':'zg','plev':'500',
              'label':'500hPa Geopotential Height',
              'outname':'500hPaGeopotentialHeight',
-             'clevs':clevs_zg,'cmap':'NegPos','units':'m',
+             'clevs':clevs_zg,'clims':(clevs_zg[0],clevs_zg[-1]),
+             'cmap':'NegPos','units':'m',
              'regions':['NorthernHemisphere']}
-    ua_dict={'name':'ua','plev':'850','label':'850 hPa Zonal Velocity','outname':'850hPaZonal',
-              'clevs':clevs_ua,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    ua2_dict={'name':'ua','plev':'200','label':'200 hPa Zonal Velocity','outname':'200hPaZonal',
-              'clevs':clevs_ua250,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    rlut_dict={'name':'rlut','plev':'toa','label':'Outgoing Longwave Radiation at Top of Atmosphere','outname':'LongwaveAtToa',
-              'clevs':clevs_rlut,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    ts_dict={'name':'ts','plev':'sfc','label':'Surface Temperature','outname':'SfcTemp',
-              'clevs':clevs_ts,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    va_dict={'name':'va','plev':'850','label':'850 hPa Meridional Velocity','outname':'850hPaMeridional',
-              'clevs':clevs_va,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    va2_dict={'name':'va','plev':'200','label':'200 hPa Meridional Velocity','outname':'200hPaMeridional',
-              'clevs':clevs_va250,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    uas_dict={'name':'uas','plev':'10m','label':'10m Eastward Velocity','outname':'10mEast',
-              'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    vas_dict={'name':'vas','plev':'10m','label':'10m Northward Velocity','outname':'10mNorth',
-              'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
-    psl_dict={'name':'psl','plev':'sfc','label':'Mean Sea Level Pressure (MSLP)','outname':'MSLP',
-              'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
-              'regions':['Global','NorthAmerica']}
+   # ua_dict={'name':'ua','plev':'850','label':'850 hPa Zonal Velocity','outname':'850hPaZonal',
+   #           'clevs':clevs_ua,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # ua2_dict={'name':'ua','plev':'200','label':'200 hPa Zonal Velocity','outname':'200hPaZonal',
+   #           'clevs':clevs_ua250,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # rlut_dict={'name':'rlut','plev':'toa','label':'Outgoing Longwave Radiation at Top of Atmosphere','outname':'LongwaveAtToa',
+   #           'clevs':clevs_rlut,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # ts_dict={'name':'ts','plev':'sfc','label':'Surface Temperature','outname':'SfcTemp',
+   #           'clevs':clevs_ts,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # va_dict={'name':'va','plev':'850','label':'850 hPa Meridional Velocity','outname':'850hPaMeridional',
+   #           'clevs':clevs_va,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # va2_dict={'name':'va','plev':'200','label':'200 hPa Meridional Velocity','outname':'200hPaMeridional',
+   #           'clevs':clevs_va250,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # uas_dict={'name':'uas','plev':'10m','label':'10m Eastward Velocity','outname':'10mEast',
+   #           'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # vas_dict={'name':'vas','plev':'10m','label':'10m Northward Velocity','outname':'10mNorth',
+   #           'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+   # psl_dict={'name':'psl','plev':'sfc','label':'Mean Sea Level Pressure (MSLP)','outname':'MSLP',
+   #           'clevs':clevs_tas,'cmap':'ColdHot','units':'${^oC}$',
+   #           'regions':['Global','NorthAmerica']}
+    
     var_params_dict=[tas_dict,pr_dict,zg_dict]
     #var_params_dict=[tas_dict, pr_dict, zg_dict, ua_dict, ua2_dict, rlut_dict, ts_dict, va_dict, va2_dict, uas_dict, vas_dict, psl_dict]] contains all new variables
     
@@ -291,7 +285,6 @@ def makeFCSTWeeks(ds,fcstdate,nweeks):
         w_start_list.append(w_start)
         w_end_list.append(w_end)
         
-        
         # Loop over variables and either sum or mean over week depending on how 
         # the variable is handled (e.g. precip is a sum; temperature is a mean)
         
@@ -324,8 +317,8 @@ def setattrs(ds,fcstdate):
     ds.attrs['fcst_date'] = fcstdate
     ds.attrs['title'] = "SubX Weekly Forecast Anomalies" 
     ds.attrs['long_title'] = "SubX Weekly Forecast Anomalies" 
-    ds.attrs['comments'] = "SubX project http://cola.gmu.edu/subx/" 
-    ds.attrs['institution'] = "[IRI,GMU]" 
+    ds.attrs['comments'] = "SubX project http://weather.ou.edu/~kpegion/subx/" 
+    ds.attrs['institution'] = "[IRI,GMU,U.Oklahoma]" 
     ds.attrs['source'] = "SubX IRIDL: http://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/"
     ds.attrs['CreationDate'] = date.today().strftime('%Y-%m-%d')
     ds.attrs['CreatedBy'] = os.environ['USER'] 
@@ -352,7 +345,6 @@ def preprocNRL(ds,startdates):
     ds=ds.rename({'S':'M'})
     ds=ds.assign_coords(S=sdate)
     ds['M']=np.arange(nens)
-    
     
     return ds
 
@@ -391,27 +383,28 @@ def subxPlot(ds,path):
         
             # Output figure partial name
             figname=path+var_params['outname']+reg_dict['name']
-            #intfigname=path+var_params['outname']
        
-            #print(ds) 
             # Call plotting with variable and region parameters 
             makeWebImages(ds,var_params['name'],var_params['units'],
                           var_params['label'],var_params['clevs'],var_params['cmap'],
                           reg_dict['lons'],reg_dict['lats'],reg_dict['clon'],
                           reg_dict['mproj'],reg_dict['state_colors'],figname)
 
-def subxIntPlot(ds,path):
-
+def subxIntPlot(ds,varnames,path):
+    
     # Get the plotting parameters for variables and regions
-    var_params_dict,reg_params_dict=initPlotParams()  
+    var_params_dict,reg_params_dict=initPlotParams() 
+    
+    # Get a list of dictionaries for variables to be included in interactive plotting
+    var_list=[]
     for var_params in var_params_dict:
-        print(var_params['name'])
+        if var_params['name'] in varnames:
+            var_list.append(var_params)
+            
+    # Call Interactive Plotting
+    makeInteractiveWebImages(ds,var_list,path)
     
-    makeInteractiveWebImages(ds,var_params['name'],var_params['name']+'_'+var_params['plev'],
-        var_params['units'],
-        var_params['label'],var_params['clevs'])
-    
-def subxWrite(ds_subx_fcst,fcstdate,emean):
+def subxWrite(ds_subx_fcst,fcstdate,emean,filepath):
     
     # Get a dictionary of SubX Models 
     subxmodels_list,_,all_varnames,all_plevstrs,all_units=initSubxModels()
@@ -433,7 +426,7 @@ def subxWrite(ds_subx_fcst,fcstdate,emean):
             if (model in ds_subx_fcst['model'].values):
                 print(model,'is here')
                 
-           # Check if this model has this variable and append
+            # Check if this model has this variable and append
             if v in varnames:
                 
                 # Individual Models
@@ -447,35 +440,34 @@ def subxWrite(ds_subx_fcst,fcstdate,emean):
                 ds=ds_subx_fcst[v].sel(model='SUBX-MME').to_dataset(name='MME')
                 ds['MME'].attrs['long_name']='SUBX-MME'+' '+str(ds['ic_dates'].values)
                 ds['MME'].attrs['units']=u
+                
                 ds_model_list.append(ds.reset_coords(drop=True))
                 
-               
-        print(ds_subx_fcst.attrs['week_start'])
-        
         # Check if list of models for this variable has data
         if (ds_model_list):
-        #ds_subx_fcst.attrs['week_start'] exists
+       
             # Put all the models together for this variable        
             ds_models=xr.merge(ds_model_list)
-            #test values:
+           
             # Set time dimension and units for grads readable
             ds_models=ds_models.rename({'week':'time'})
             ds_models['time'].attrs['start_date']= str(ds_subx_fcst.attrs['week_start'])
             ds_models['time'].attrs['end_date']= str(ds_subx_fcst.attrs['week_end'])
             #ds_models['time'].attrs['units']='days since '+str(ds['ic_dates'][0].values)
-            print(ds['ic_dates'])
             
             ds_models['time'].attrs['standard_name']='time'
             ds_models['time'].attrs['long_name']='Time of measurements'
             ds_models.attrs['units']=u
-            print(ds_models['time'].attrs)
+            
             # Write out file
-            ofname='/share/scratch/kpegion/subx/forecast/weekly/'+fcstdate.strftime('%Y%m%d')+'/data/fcst_'+fcstdate.strftime('%Y%m%d')+'.anom.'+v+'_'+p+'.'+emean+'.nc'
+            ofname=filepath+fcstdate.strftime('%Y%m%d')+'/data/fcst_'+fcstdate.strftime('%Y%m%d')+'.anom.'+v+'_'+p+'.'+emean+'.nc'
+            #ofname=filepath+'fcst_'+fcstdate.strftime('%Y%m%d')+'.anom.'+v+'_'+p+'.'+emean+'.nc'
+
             print(ofname)
             ds_models.to_netcdf(ofname)
             
         else: # list is empty, variable does not exist
-            print('This variable does not exist in any models. File '+basename(ofname)+' not written.')
+            print('This variable does not exist in any models. File '+os.path.basename(ofname)+' not written.')
 
 def getFcstDates(date=None):
 
@@ -509,7 +501,6 @@ def getDataViaIngrid(ds_meta,baseURL):
     # Construct the pressure level information for IngridURL if it exists
     ingrid_pvalue=''
     if ('P' in list(ds_meta.coords)):
-        print(ds_meta['P'].values)
         ingrid_pvalue='P/%28'+str(int(ds_meta['P'].values))+'%29VALUES'
             
     # Construct the Date Information for the IngridURL
@@ -522,7 +513,6 @@ def getDataViaIngrid(ds_meta,baseURL):
     # Close the full dataset used to get the metadata
     ds_meta.close()
     
-   
     # Construct the Ingrid URL
     if (ingrid_pvalue==''):
         ingridURL=baseURL+'/'+ingrid_svalue+'/dods/'
@@ -546,77 +536,44 @@ def combine_models(ds,v):
     
     return ds_all
 
-def makeInteractiveWebImages(ds,v,vs,unit,vl,clevs):
-   
-   # Proplot makes high res pics so need to reduce for web pics
+def makeInteractiveWebImages(ds,var_list,figpath):
+    
+    # Proplot makes high res pics so need to reduce for web pics
     pplt.rc.savefigdpi = 100
-    ds_vars_list=[]
-    fcstdate='20230608'
-    varnames=['tas_2m','pr_sfc','zg_500']
-    clevs_pr=(-100,100)
-    clevs_tas=(-4,4)#-5,5
-    clevs_zg = (-100,100)#-100,100
-    sf=[1.0,1.0,1.0]#86400*7
-    units=['deg C','mm/week','m/week']
-    
-    for ivar,v in enumerate(varnames):
-
-        fname='/share/scratch/kpegion/subx/forecast/weekly/'+fcstdate+'/data/fcst_'+fcstdate+'.anom.'+v+'.emean.nc'
-        ds=xr.open_dataset(fname)
-        ds_all=combine_models(ds,v)
-        ds_all[v]=ds_all[v]*sf[ivar]
-        # stores the data with variable name 'data'
-        #ds_all=ds_all.rename_vars({v:'data'})
-        ds_vars_list.append(ds_all)
-    
-    
-    # combines the data so that there is a coordinate/dimension called variable name
-    ds_vars=xr.combine_nested(ds_vars_list,concat_dim='varnames')
-    ds_vars['varnames']=varnames
-
-    ds_vars=ds_vars.compute()
-
-    ## Create attrs for ds_vars to use for plotting
-    ds_vars.attrs['week'] = ds_vars['time']
-    ds_vars['time'].attrs['long_name'] = 'Week'
-    ds_vars['time'].attrs['name'] = 'Time of Measurements'
-
-    print(ds_vars['time'].attrs)
-    
-    degree_sign = u'\N{DEGREE SIGN}'
-    plot2=(ds_vars['tas_2m'][0]).hvplot(x='lon',y='lat',groupby=['model','time'],kind='image',
-        xaxis=False, yaxis=False,  
-        cmap='ColdHot', rasterize=True, clim=clevs_tas,
-        geo=True, projection=ccrs.Robinson(), coastline=True, clabel = degree_sign+'C',
-        global_extent=True,title='SubX 2m Temperature Anomalies ('+degree_sign+'C) for Forecast Date: ' +fcstdate, 
-        width=900,height=350)
-    plot2=plot2*(gf.states(color=None))
-    plot2=plot2*(gf.borders)
-
-    plot3=(ds_vars['pr_sfc'][1]).hvplot(x='lon',y='lat',groupby=['model','time'],kind='image',
-        xaxis=False, yaxis=False,
-        cmap='DryWet', rasterize=True, clim=clevs_pr,
-        geo=True, projection=ccrs.Robinson(),coastline=True, clabel = 'mm/week',
-        global_extent=True,title='SubX Total Precipitation Anomalies (mm) for Forecast Date: '+fcstdate,
-        width=900,height=350)
-    plot3=plot3*(gf.states(color=None))
-    plot3=plot3*(gf.borders)
-
-    plot4=(ds_vars['zg_500'][2]).hvplot(x='lon',y='lat',groupby=['model','time'],kind='image',
-        xaxis=False, yaxis=False,
-        cmap='NegPos', rasterize=True, clim=clevs_zg,
-        geo=True, projection=ccrs.Robinson(),coastline=True, clabel = 'm/week',
-        global_extent=True,title='SubX 500hPa Geopotential Height (m) Anomalies for Forecast Date: '+fcstdate,
-        width=900,height=350)
-    plot4=plot4*gf.states(color=None)
-    plot4=plot4*gf.borders
-    
-    pn.Column(plot2,plot3,plot4).save(filename='IntPlot'+fcstdate+'.html', embed=True)
-
-    
-    
-
-    
         
+    # Make a list of plots for each variable to be plotted
+    plot_list=[]
+    
+    # Loop over the variables to include in interactive plottin
+    for v in var_list:
         
+        # Get variable attributes for plotting
+        vname=v['name']
+        clevs=v['clevs']
+        units=v['units']
+        cmap=v['cmap']
+        vlabel=v['label']
+        clims=v['clims']
         
+        # Get forecast date
+        fcstdate=ds.attrs['fcst_date'].strftime(('%Y%m%d'))
+        
+        # Create plot title
+        title='SubX '+vlabel+' Anomalies ('+units+') for Forecast Date: ' +fcstdate
+
+        # Make hvplot image
+        tmp_plot=(ds[vname]).hvplot(x='lon',y='lat',groupby=['model','week'],kind='image',
+                                    xaxis=False, yaxis=False,  
+                                    cmap=cmap, rasterize=True, clim=clims,
+                                    geo=True, projection=ccrs.Robinson(), coastline=True, clabel = units,
+                                    global_extent=True,
+                                    title=title,width=900,height=350)
+        # Add geography to hvplot
+        tmp_plot=tmp_plot*(gf.states(color=None))
+        tmp_plot=tmp_plot*(gf.borders)
+        
+        # Collect the plot for each variable in a list
+        plot_list.append(tmp_plot)
+        
+    # Make a Column of all the plots on one page and save to html
+    pn.Column(plot_list[0],plot_list[1],plot_list[2]).save(filename=figpath+'/Interactive.html', embed=True)

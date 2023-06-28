@@ -39,14 +39,16 @@ args = parser.parse_args()
 subxmodels_list,_,_,_,_=initSubxModels()
 model_labels=[item['group']+'-'+item['model'] for item in subxmodels_list]
 nweeks=4
+interactive_vars=['tas','pr','zg']
 
 # ### File paths
 
 url='http://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/'
 datatype='forecast'
-#hcstPath='/shared/subx/hindcast/'
-hcstPath='/share/scratch/kpegion/subx/hindcast/'
-
+#hcstPath='/mcs/scratch/kpegion/subx/hindcast/'
+hcstPath='/data/esplab/shared/subx/hindcast/'
+#outPath='/mcs/scratch/kpegion/subx/figs_test/'
+outPath='/data/esplab/shared/subx/forecast/weekly/'
 
 # ### Fcst Date Handling
 
@@ -59,10 +61,11 @@ else:
 
 print('PROCESSING FCSTS FOR: ')
 
-# Loop over all the SubX Models
 ds_models_list=[]
 ds_modelsmin_list=[]
 ds_modelsmax_list=[]
+
+# Loop over all the SubX Models
 for imodel,subx_model in enumerate(subxmodels_list):
     
     # Get the model, group, variables, and levels from the dictionary 
@@ -77,11 +80,13 @@ for imodel,subx_model in enumerate(subxmodels_list):
     ds_anoms_list=[]
     ds_emaxanoms_list=[]
     ds_eminanoms_list=[]
+    
     for varname,plevstr in zip(varnames,plevstrs):
         
         # Read Data
         baseURL=url+'.'+group+'/.'+model+'/.'+datatype+'/.'+varname
-        inFname=baseURL+'/'+str(date.toordinal(fcstdate))+'/pop/dods'  
+        #inFname=baseURL+'/'+str(date.toordinal(fcstdate))+'/pop/dods' 
+        inFname=baseURL+'/7000/pop/dods' 
         print(inFname)
         ds=xr.open_dataset(inFname)
         
@@ -95,7 +100,6 @@ for imodel,subx_model in enumerate(subxmodels_list):
         # Identify dates in this forecast week
         dates_mask=np.isin(np.array(fcst_week_dates).astype('datetime64[ns]'),ds['S'])
         startdates=fcst_week_dates[dates_mask]
-        print(startdates)
         
         # Make string versions of the dates in this forecast week
         sdates=startdates.strftime(('%Y%m%d'))
@@ -107,14 +111,11 @@ for imodel,subx_model in enumerate(subxmodels_list):
         # Make sure there is data for this forecast week and this model, if not, skip
         if (ds['S'].size>0):
             
-            
             # Drop any startdates with all missing
             ds=ds.dropna('S',how='all')
             
-            
             # Make sure there is data for this forecast week and this model after dropping missing
             if (ds['S'].size>0):
-                
                 
                 # Select the most recent available start date in this forecast week
                 if group=='NRL': 
@@ -141,21 +142,18 @@ for imodel,subx_model in enumerate(subxmodels_list):
                 ds_out=ds.rename({'X':'lon','Y':'lat','L':'lead'})  
                 ds_out['lon'].attrs['units']='degrees_east'
                 ds_out['lat'].attrs['units']='degrees_north'
-                
+            
                 # Get Climo and reset and re-name coordinates as needed to subtract from full field
                 climo_fname=hcstPath+varname+plevstr+'/daily/climo/'+group+'-'+model+'/'+varname+'_'+group+'-'+model+'_'+mmdd[-1]+'.climo.p.nc'
                 ds_clim=xr.open_dataset(climo_fname)
                 ds_clim=ds_clim.rename({'time':'lead'})
                 ds_clim['lead']=ds['L']
-                print(climo_fname)
-                #plt.contour(ds_clim['tas'][0,:,:])
-                
             
                 # Special handling for GEFSv12 incorrect units for precip
                 if (model=='GEFSv12' and varname=='pr'):
                     ds_clim=ds_clim/86400.0
                     
-                # Special handling for GEFSv12_CPC incorrect units for precip
+                # Special handling for GEFSv12_CPC  incorrect units for precip
                 if (model=='GEFSv12_CPC' and varname=='pr'):
                     ds_clim=ds_clim/86400.0
             
@@ -168,7 +166,7 @@ for imodel,subx_model in enumerate(subxmodels_list):
                 
                 ds_emin=ds_out.min(dim='M').squeeze()
                 ds_eminanoms=ds_emin[varname]-ds_clim[varname] 
-            
+                
                 # Assign the number of ensemble members
                 ds_anoms['nens']=len(ds['M'])
                 ds_emaxanoms['nens']=len(ds['M'])
@@ -194,8 +192,8 @@ for imodel,subx_model in enumerate(subxmodels_list):
         ds_modelsmax_list.append(xr.merge(ds_emaxanoms_list))
         
     if (ds_eminanoms_list):
-        ds_modelsmin_list.append(xr.merge(ds_eminanoms_list))
-    
+        ds_modelsmin_list.append(xr.merge(ds_eminanoms_list))    
+
 
 # Combine into dataset with all variables and all models
 ds_models=xr.combine_nested(ds_models_list,concat_dim='model').persist()
@@ -230,29 +228,30 @@ ds_subx_fcst_min=xr.concat([ds_weekmin,ds_mme_min],dim='model').compute()
 
 # Set global attributes
 ds_subx_fcst=setattrs(ds_subx_fcst,fcstdate)
+ds_subx_fcst_max=setattrs(ds_subx_fcst_max,fcstdate)
+ds_subx_fcst_min=setattrs(ds_subx_fcst_min,fcstdate)
+
 print()
 print("SUBX FCST DATASET: ")
-#print(ds_subx_fcst)
-#print(ds_subx_fcst_max)
-#print(ds_subx_fcst_min)
+print(ds_subx_fcst)
 
 # Write Files
 #print()
-print("WRITING DATA")
-subxWrite(ds_subx_fcst,fcstdate,'emean')
-subxWrite(ds_subx_fcst_max,fcstdate,'emax')
-subxWrite(ds_subx_fcst_min,fcstdate,'emin')
+#print("WRITING DATA")
+#subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
+#subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
+#subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
 
 # Make Figures
+figpath=outPath+fcstdate.strftime('%Y%m%d')+'/images/'
 print()
-print("MAKING FIGURES")
-#figpath='/shared/subx/forecast/weekly/'+fcstdate.strftime('%Y%m%d')+'/images/'
-figpath='/share/scratch/kpegion/subx/forecast/weekly/'+fcstdate.strftime('%Y%m%d')+'/images/'
-#figpath='/scratch/kpegion/subx/figs_test/'
-#print(figpath)
-#intfigpath='/share/scratch/kpegion/subx/forecast/weekly/'+fcstdate.strftime('%Y%m%d')+'/intimages/'
+print("MAKING STATIC FIGURES")
 subxPlot(ds_subx_fcst,figpath)
-#subxIntPlot(ds,intfigpath)
+
+# Make Interactive plots
+print()
+print("MAKING INTERACTIVE PLOTS")
+subxIntPlot(ds_subx_fcst,interactive_vars,figpath)
 
 # Print timing information
 print()
