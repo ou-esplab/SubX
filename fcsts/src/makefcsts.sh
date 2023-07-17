@@ -21,7 +21,7 @@ echo ${fcstdate}
 # Set Output Path
 #outPath=/shared/subx/forecast/weekly/
 #outPath=/share/scratch/kpegion/subx/forecast/weekly/
-outPath=/data/esplab/shared/subx/forecast/weekly/
+outPath=/data/esplab/shared/model/initialized/subx/forecast/weekly/
 
 # Make directories for this forecast if they don't exist
 if [ ! -d "${outPath}/$fcstdate/images/" ]
@@ -34,12 +34,16 @@ then
    echo "Making Directory ${outPath}/$fcstdate/data/"
    mkdir -p ${outPath}/$fcstdate/data
 fi
-
+ 
 # Create lock file in this fcsts directory
 touch ${outPath}/$fcstdate/subxfcst.lock
 
 # Run Program to Make Forecast plot and data files
 ./MakeSubXFcst.py --date ${fcstdate} 
+
+# Set group and permissions for forecast files
+chgrp -R esplab ${outPath}/$fcstdate
+chmod 775 -R ${outPath}/$fcstdate
 
 # Remove lockfile if this program runs to completion
 rm ${outPath}/$fcstdate/subxfcst.lock

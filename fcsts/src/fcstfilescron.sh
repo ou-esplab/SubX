@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xve
 
-execDIR=/home/kpegion/projects/SubX_Fcsts/src/
+execDIR=/home/kpegion/projects/SubX/fcsts/src/
 prog=mcssomfiletransfer.sh
 fcstdate=$(date -dlast-Thursday +%Y%m%d)
 

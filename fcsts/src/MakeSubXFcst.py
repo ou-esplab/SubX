@@ -46,9 +46,9 @@ interactive_vars=['tas','pr','zg']
 url='http://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/'
 datatype='forecast'
 #hcstPath='/mcs/scratch/kpegion/subx/hindcast/'
-hcstPath='/data/esplab/shared/subx/hindcast/'
+hcstPath='/data/esplab/shared/model/initialized/subx/hindcast/'
 #outPath='/mcs/scratch/kpegion/subx/figs_test/'
-outPath='/data/esplab/shared/subx/forecast/weekly/'
+outPath='/data/esplab/shared/model/initialized/subx/forecast/weekly/'
 
 # ### Fcst Date Handling
 
@@ -236,11 +236,11 @@ print("SUBX FCST DATASET: ")
 print(ds_subx_fcst)
 
 # Write Files
-#print()
-#print("WRITING DATA")
-#subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
-#subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
-#subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
+print()
+print("WRITING DATA")
+subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
+subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
+subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
 
 # Make Figures
 figpath=outPath+fcstdate.strftime('%Y%m%d')+'/images/'

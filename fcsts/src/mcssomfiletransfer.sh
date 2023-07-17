@@ -1,10 +1,11 @@
 #!/bin/bash
 set -xve
 fcstdate=$1
-sourceDir=/share/scratch/kpegion/subx/forecast/weekly/${fcstdate}/
+sourceDir=/data/esplab/shared/model/initialized/subx/forecast/weekly/${fcstdate}/
+echo $sourceDir
 destDir=/home/kpegion/http/subx/forecasts/
 destHost=somclass23.som.nor.ou.edu
-execDir=/home/kpegion/projects/SubX_Fcsts/src
+execDir=/home/kpegion/projects/SubX/fcsts/src
 
 # Check if lock file exists if so, wait 1 min and check again
 # Timeout after 1 hour
@@ -22,19 +23,22 @@ then
 
     # Create Forecast Date Directories on somclass
 
-    ssh ${destHost} "mkdir -p ${destDir}/images/${fcstdate}"
-    ssh ${destHost} "mkdir -p ${destDir}/data/${fcstdate}"
+    ssh -i ~/.ssh/id_ed25519 ${destHost} "mkdir -p ${destDir}/images/${fcstdate}"
+    ssh -i ~/.ssh/id_ed25519 ${destHost} "mkdir -p ${destDir}/data/${fcstdate}"
 
     # Copy images and data to appropriate directories on somclass
 
-    scp ${sourceDir}/images/${fname}/* ${destHost}:${destDir}/images/${fcstdate}/
-    scp ${sourceDir}/data/${fname}/* ${destHost}:${destDir}/data/${fcstdate}/
-    scp ${sourceDir}/images/${fname}/* ${destHost}:${destDir}/images/Latest/
+    scp -i ~/.ssh/id_ed25519 ${sourceDir}/images/${fname}/* ${destHost}:${destDir}/images/${fcstdate}/
+    scp -i ~/.ssh/id_ed25519 ${sourceDir}/data/${fname}/* ${destHost}:${destDir}/data/${fcstdate}/
+    scp -i ~/.ssh/id_ed25519 ${sourceDir}/images/${fname}/* ${destHost}:${destDir}/images/Latest/
+
+    # Set the group to esplab and permissions to 775
+    ssh -i ~/.ssh/id_ed25519 $USER@${destHost} "chgrp -R ${destDir};chmod -R 755 ${destDIR}"
 
     # Run Python Program to update html on somclass
-#    scp ${destHost}:${destDir}/forecasts.html ./forecasts.${fcstdate}.html
-#    ./updatehtmldates.py --date ${fcstdate}
-#    scp output.${fcstdate}.html ${destHost}:${destDir}/forecasts.html
+    scp -i ~/.ssh/id_ed25519 ${destHost}:${destDir}/forecasts.html ./forecasts.${fcstdate}.html
+    ./updatehtmldates.py --date ${fcstdate}
+    scp -i ~/.ssh/id_ed25519output.${fcstdate}.html ${destHost}:${destDir}/forecasts.html
 else
 
     echo "ERROR: makesubsfcsts.sh did not complete successfully. Lock file still present for $fcstdate"

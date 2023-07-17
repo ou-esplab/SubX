@@ -413,39 +413,41 @@ def subxWrite(ds_subx_fcst,fcstdate,emean,filepath):
     for v,p,u in zip(all_varnames,all_plevstrs, all_units):
 
         ds_model_list=[]
-    
+        
         # Loop over the SubX Models
         for imodel,subx_model in enumerate(subxmodels_list):
+            
         
             # Get the model, group, variables, and levels from the dictionary 
             varnames=subx_model['varnames']
             plevstrs=subx_model['plevstrs']
             model=subx_model['model']
             group=subx_model['group']
-
-            if (model in ds_subx_fcst['model'].values):
+            
+            if (group+'-'+model in ds_subx_fcst['model'].values):
                 print(model,'is here')
                 
-            # Check if this model has this variable and append
-            if v in varnames:
+                # Check if this model has this variable and append
+                if v in varnames:
                 
-                # Individual Models
-                ds=ds_subx_fcst[v].sel(model=group+'-'+model).to_dataset(name=model)
-                ds[model].attrs['long_name']=group+'-'+model+' '+str(ds['ic_dates'].values)
-                ds[model].attrs['units']=u
-                ds_subx_fcst.attrs['units']=u
-                ds_model_list.append(ds.reset_coords(drop=True))
+                    # Individual Models
+                    ds=ds_subx_fcst[v].sel(model=group+'-'+model).to_dataset(name=model)
+                    ds[model].attrs['long_name']=group+'-'+model+' '+str(ds['ic_dates'].values)
+                    ds[model].attrs['units']=u
+                    ds_subx_fcst.attrs['units']=u
+                    ds_model_list.append(ds.reset_coords(drop=True))
             
-                # MME
-                ds=ds_subx_fcst[v].sel(model='SUBX-MME').to_dataset(name='MME')
-                ds['MME'].attrs['long_name']='SUBX-MME'+' '+str(ds['ic_dates'].values)
-                ds['MME'].attrs['units']=u
+                    # MME
+                    ds=ds_subx_fcst[v].sel(model='SUBX-MME').to_dataset(name='MME')
+                    ds['MME'].attrs['long_name']='SUBX-MME'+' '+str(ds['ic_dates'].values)
+                    ds['MME'].attrs['units']=u
                 
-                ds_model_list.append(ds.reset_coords(drop=True))
+                    ds_model_list.append(ds.reset_coords(drop=True))
                 
         # Check if list of models for this variable has data
         if (ds_model_list):
        
+            #print("in ds_model_list")
             # Put all the models together for this variable        
             ds_models=xr.merge(ds_model_list)
            
@@ -467,7 +469,7 @@ def subxWrite(ds_subx_fcst,fcstdate,emean,filepath):
             ds_models.to_netcdf(ofname)
             
         else: # list is empty, variable does not exist
-            print('This variable does not exist in any models. File '+os.path.basename(ofname)+' not written.')
+            print('This variable does not exist in any models. File not written.')
 
 def getFcstDates(date=None):
 
