@@ -33,7 +33,7 @@ then
     scp -i ~/.ssh/id_ed25519 ${sourceDir}/images/${fname}/* ${destHost}:${destDir}/images/Latest/
 
     # Set the group to esplab and permissions to 775
-    ssh -i ~/.ssh/id_ed25519 $USER@${destHost} "chgrp -R ${destDir};chmod -R 755 ${destDIR}"
+    #ssh -i ~/.ssh/id_ed25519 $USER@${destHost} "chgrp -R ${destDir};chmod -R 755 ${destDIR}"
 
     # Run Python Program to update html on somclass
     scp -i ~/.ssh/id_ed25519 ${destHost}:${destDir}/forecasts.html ./forecasts.${fcstdate}.html

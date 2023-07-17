@@ -247,11 +247,11 @@ print("SUBX FCST DATASET: ")
 print(ds_subx_fcst)
 
 # Write Files
-#print()
-#print("WRITING DATA")
-#subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
-#subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
-#subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
+print()
+print("WRITING DATA")
+subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
+subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
+subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
 
 # Make Figures
 figpath=outPath+fcstdate.strftime('%Y%m%d')+'/images/'

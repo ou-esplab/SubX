@@ -23,7 +23,7 @@ if (args.date):
 else:
     fcstdate,fcst_week_dates=getFcstDates()
 
-html_doc='forecasts.html'
+html_doc='forecasts'+fcstdate+'.html'
 f=codecs.open(html_doc,'r')
 soup = BeautifulSoup(f, 'html.parser')
 
