@@ -147,15 +147,26 @@ for imodel,subx_model in enumerate(subxmodels_list):
                 climo_fname=hcstPath+varname+plevstr+'/daily/climo/'+group+'-'+model+'/'+varname+'_'+group+'-'+model+'_'+mmdd[-1]+'.climo.p.nc'
                 ds_clim=xr.open_dataset(climo_fname)
                 ds_clim=ds_clim.rename({'time':'lead'})
-                ds_clim['lead']=ds['L']
+                
             
-                # Special handling for GEFSv12 incorrect units for precip
-                if (model=='GEFSv12' and varname=='pr'):
-                    ds_clim=ds_clim/86400.0
+                 # Special handling for GEFSv12 incorrect units for precip
+                if (model=='GEFSv12'):
+                    if (varname=='pr'):
+                        ds_clim=ds_clim/86400.0
                     
-                # Special handling for GEFSv12_CPC  incorrect units for precip
-                if (model=='GEFSv12_CPC' and varname=='pr'):
-                    ds_clim=ds_clim/86400.0
+                # Special handling for GEFSv12_CPC regarding leads
+                elif (model=='GEFSv12_CPC'):
+                    
+                    # For this model, there are differences in the L dimension between the forecast
+                    # and hindcast.  Align them to account for this.
+                    leads=pd.date_range(ds['L'][0].values-pd.Timedelta(days=1),ds['L'][-1].values,freq='D')
+                    ds_clim['lead']=leads
+                    
+                    if (varname=='pr'):
+                        ds_clim=ds_clim/86400.0
+                
+                else:
+                    ds_clim['lead']=ds['L']   
             
                 # Calculate Ensemble Mean and Ensemble Mean Anomalies       
                 ds_emean=ds_out.mean(dim='M').squeeze() 
@@ -236,11 +247,11 @@ print("SUBX FCST DATASET: ")
 print(ds_subx_fcst)
 
 # Write Files
-print()
-print("WRITING DATA")
-subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
-subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
-subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
+#print()
+#print("WRITING DATA")
+#subxWrite(ds_subx_fcst,fcstdate,'emean',outPath)
+#subxWrite(ds_subx_fcst_max,fcstdate,'emax',outPath)
+#subxWrite(ds_subx_fcst_min,fcstdate,'emin',outPath)
 
 # Make Figures
 figpath=outPath+fcstdate.strftime('%Y%m%d')+'/images/'
