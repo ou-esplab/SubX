@@ -86,7 +86,7 @@ for imodel,subx_model in enumerate(subxmodels_list):
         # Read Data
         baseURL=url+'.'+group+'/.'+model+'/.'+datatype+'/.'+varname
         #inFname=baseURL+'/'+str(date.toordinal(fcstdate))+'/pop/dods' 
-        inFname=baseURL+'/7000/pop/dods' 
+        inFname=baseURL+'/8000/pop/dods' 
         print(inFname)
         ds=xr.open_dataset(inFname)
         

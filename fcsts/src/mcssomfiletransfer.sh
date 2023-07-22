@@ -38,7 +38,7 @@ then
     # Run Python Program to update html on somclass
     scp -i ~/.ssh/id_ed25519 ${destHost}:${destDir}/forecasts.html ./forecasts.${fcstdate}.html
     ./updatehtmldates.py --date ${fcstdate}
-    scp -i ~/.ssh/id_ed25519output.${fcstdate}.html ${destHost}:${destDir}/forecasts.html
+    scp -i ~/.ssh/id_ed25519 output.${fcstdate}.html ${destHost}:${destDir}/forecasts.html
 else
 
     echo "ERROR: makesubsfcsts.sh did not complete successfully. Lock file still present for $fcstdate"

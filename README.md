@@ -1,4 +1,2 @@
 # SubX
-# Using environment:subx
-# SubX
-# Using environment:subx
+# Using Python environment:subx
