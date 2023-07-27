@@ -7,7 +7,7 @@ set -xve
 
 # Activate conda environment
 . /home/$USER/miniconda3/etc/profile.d/conda.sh
-conda activate subx
+conda activate subxnmme
 
 # Confirm conda and python location (for testing purposes)
 which conda

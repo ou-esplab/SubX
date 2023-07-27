@@ -7,6 +7,10 @@ destDir=/home/kpegion/http/subx/forecasts/
 destHost=somclass23.som.nor.ou.edu
 execDir=/home/kpegion/projects/SubX/fcsts/src
 
+# Activate conda environment
+. /home/$USER/miniconda3/etc/profile.d/conda.sh
+conda activate subxnmme
+
 # Check if lock file exists if so, wait 1 min and check again
 # Timeout after 1 hour
 
